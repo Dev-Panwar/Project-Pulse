@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!--    custom style for all activities-->
+    <style name="Theme.ProjectPulse.NoActionBar">
+<!--        removes Action bar -->
+         <item name="windowActionBar">false</item>
+<!--        removes title-->
+        <item name="windowNoTitle">true</item>
+    </style>
+
+<!--    App Bar Style for app bar main -->
+      <style name="Theme.ProjectPulse.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"></style>
+<!-- style/theme for toolbar on Appbar main-->
+      <style name="Theme.ProjectPulse.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"></style>
+</resources>

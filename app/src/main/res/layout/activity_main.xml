@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--open Drawer=start means open drawer from left side-->
+<!--fitSystem Window true auto adjust the view according to system windows such as status bar-->
+<!-- this is the Layout for drawer-->
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:fitsSystemWindows="true"
+    tools:openDrawer="start"
+    >
+
+<!--The Drawer layout include the AppBar..and Appbar include MainContent..i.e. looks like toolBar like thing...On running app see Top bar containing Burger icon(3 horizontal lines) to go to navigation view-->
+
+    <include layout="@layout/app_bar_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+<!-- this is the view when we swipe left in Drawer Layout-->
+<!--    when we swipe left and see navigation view...the upper part in this view showing user image and name is header layout i.e. nav_header_main -->
+<!--    and menu is the list of option like profile,signOut,etc below header in navigation view -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@layout/nav_header_main"
+        app:menu="@menu/activity_main_drawer"/>
+
+
+</androidx.drawerlayout.widget.DrawerLayout>
