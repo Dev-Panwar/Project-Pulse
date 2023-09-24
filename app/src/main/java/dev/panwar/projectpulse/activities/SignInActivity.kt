@@ -75,9 +75,10 @@ class SignInActivity : BaseActivity() {
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w("Sign In", "signInWithEmail:failure", task.exception)
+                        hideProgressDialogue()
                         Toast.makeText(
                             baseContext,
-                            "Authentication failed.",
+                            "Wrong Credentials, Try Again",
                             Toast.LENGTH_SHORT,
                         ).show()
                     }
