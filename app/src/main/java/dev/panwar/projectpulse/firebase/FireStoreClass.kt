@@ -1,9 +1,11 @@
 package dev.panwar.projectpulse.firebase
 
+import android.app.Activity
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import dev.panwar.projectpulse.activities.MainActivity
 import dev.panwar.projectpulse.activities.SignInActivity
 import dev.panwar.projectpulse.activities.SignUpActivity
 import dev.panwar.projectpulse.models.User
@@ -28,19 +30,38 @@ class FireStoreClass {
              }
     }
 
-    fun signInUser(activity: SignInActivity){
+    fun signInUser(activity: Activity){
 //        same as above function just set change to get...refer to code explanation by above comments
         mFireStore.collection(Constants.USERS)
             .document(getCurrentUserID()).get().addOnSuccessListener { document->
 //                we stored the currently Logged in User by converting Current User ID(document) to object of type User data class
-                  val loggedInUser = document.toObject(User::class.java)
-                if (loggedInUser!=null) {
-//                calling function of signInactivity and passing current user
-                    activity.signInSuccess(loggedInUser)
+                  val loggedInUser = document.toObject(User::class.java)!!
+
+                when(activity){
+                    is SignInActivity ->{
+//                       fir this fun will be called by signInActivity
+//                       calling function of signInactivity and passing current user..where it will start Main Activity where this Function is called Again and Main Activity context is passed then isMainActivity code is executed
+
+                        activity.signInSuccess(loggedInUser)
+                    }
+                    is MainActivity -> {
+                        activity.updateNavigationUserDetails(loggedInUser)
+                    }
                 }
             }.addOnFailureListener {
 //                 activity.javaClass.name gives the name of Activity
-                    e-> Log.e(activity.javaClass.name,"Error Writing Document")
+                    e->
+
+                when(activity){
+                    is SignInActivity ->{
+//                        calling function of signInactivity and passing current user
+                        activity.hideProgressDialogue()
+                    }
+                    is MainActivity -> {
+                        activity.hideProgressDialogue()
+                    }
+                }
+                Log.e(activity.javaClass.name,"Error Writing Document")
             }
     }
 
