@@ -10,8 +10,13 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.ProjectPulse"
-
         tools:targetApi="31">
+        <activity
+            android:name=".activities.MyProfileActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.ProjectPulse.NoActionBar"
+            />
         <activity
             android:name=".activities.BaseActivity"
             android:exported="false" />
@@ -45,8 +50,7 @@
             android:name=".activities.MainActivity"
             android:exported="true"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.ProjectPulse.NoActionBar"
-            />
+            android:theme="@style/Theme.ProjectPulse.NoActionBar" />
     </application>
 
 </manifest>
