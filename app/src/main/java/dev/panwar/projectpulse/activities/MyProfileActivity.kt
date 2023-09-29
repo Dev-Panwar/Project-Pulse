@@ -53,19 +53,19 @@ class MyProfileActivity : BaseActivity() {
 //            now we have Uri of image
             mSelectedImageFileUri = data.data
 
-//            try {
-////                finally adding image to ivProfileUserImage
-//                binding?.ivProfileUserImage?.let {
-//                    Glide
-//                        .with(this)
-//                        .load(mSelectedImageFileUri)
-//                        .centerCrop()
-//                        .placeholder(R.drawable.ic_user_place_holder)
-//                        .into(it)
-//                }
-//            }catch (e: IOException){
-//                e.printStackTrace()
-//            }
+            try {
+//                finally adding image to ivProfileUserImage
+                binding?.ivProfileUserImage?.let {
+                    Glide
+                        .with(this)
+                        .load(mSelectedImageFileUri)
+                        .centerCrop()
+                        .placeholder(R.drawable.ic_user_place_holder)
+                        .into(it)
+                }
+            }catch (e: IOException){
+                e.printStackTrace()
+            }
         }
     }
 
