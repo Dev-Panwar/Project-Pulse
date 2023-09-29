@@ -5,9 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -16,7 +14,6 @@ import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import de.hdodenhof.circleimageview.CircleImageView
 import dev.panwar.projectpulse.R
-import dev.panwar.projectpulse.databinding.ActivityMainBinding
 import dev.panwar.projectpulse.firebase.FireStoreClass
 import dev.panwar.projectpulse.models.User
 
@@ -49,7 +46,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 //       For NavigationView.OnNavigationItemSelectedListener
         navView.setNavigationItemSelectedListener(this)
 //        end
-        FireStoreClass().signInUser(this)
+        FireStoreClass().loadUserData(this)
     }
 
     private fun setupActionBar(){
@@ -80,6 +77,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
     }
 
+//    this function is for if if any item is selected from the menu of Navigation view
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.nav_my_profile -> {

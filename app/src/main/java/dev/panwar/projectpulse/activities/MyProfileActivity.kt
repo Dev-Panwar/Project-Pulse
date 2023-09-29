@@ -1,7 +1,10 @@
 package dev.panwar.projectpulse.activities
 import android.os.Bundle
+import com.bumptech.glide.Glide
 import dev.panwar.projectpulse.R
 import dev.panwar.projectpulse.databinding.ActivityMyProfileBinding
+import dev.panwar.projectpulse.firebase.FireStoreClass
+import dev.panwar.projectpulse.models.User
 
 class MyProfileActivity : BaseActivity() {
 
@@ -12,6 +15,7 @@ class MyProfileActivity : BaseActivity() {
         binding = ActivityMyProfileBinding.inflate(layoutInflater)
         setContentView(binding?.root)
         setupActionBar()
+        FireStoreClass().loadUserData(this)
     }
 
 
@@ -27,5 +31,26 @@ class MyProfileActivity : BaseActivity() {
         binding?.toolbarMyProfileActivity?.setNavigationOnClickListener {
             onBackPressed()
         }
+    }
+
+    fun setUserDataInUI(user:User){
+//        for setting up the image in MyProfile Ui
+//        line 39 is additional line required as Glide requires Imageview in into() but we have circle imageview
+        binding?.ivUserImage?.let {
+            Glide
+                .with(this)
+                .load(user.image)
+                .centerCrop()
+                .placeholder(R.drawable.ic_user_place_holder)
+                .into(it)
+        }
+        binding?.etName?.setText(user.name)
+        binding?.etEmail?.setText(user.email)
+//        if no mobile number added we have default mobile number as 0 in User data class.
+        if (user.mobile !=0L){
+//            if mobile no. is not equal to 0 add...the mobile number stored in FireStore Class
+            binding?.etMobile?.setText(user.mobile.toString())
+        }
+
     }
 }

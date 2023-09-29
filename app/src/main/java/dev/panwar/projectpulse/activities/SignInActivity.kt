@@ -1,7 +1,6 @@
 package dev.panwar.projectpulse.activities
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
@@ -71,7 +70,7 @@ class SignInActivity : BaseActivity() {
                         Log.d("Sign In", "signInWithEmail:success")
 //                        val user = auth.currentUser
 //                        after authenticating Signing In the User in FireStore to access it's data
-                        FireStoreClass().signInUser(this)
+                        FireStoreClass().loadUserData(this)
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w("Sign In", "signInWithEmail:failure", task.exception)

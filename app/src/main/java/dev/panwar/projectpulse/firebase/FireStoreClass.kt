@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import dev.panwar.projectpulse.activities.MainActivity
+import dev.panwar.projectpulse.activities.MyProfileActivity
 import dev.panwar.projectpulse.activities.SignInActivity
 import dev.panwar.projectpulse.activities.SignUpActivity
 import dev.panwar.projectpulse.models.User
@@ -30,11 +31,12 @@ class FireStoreClass {
              }
     }
 
-    fun signInUser(activity: Activity){
+//    this function is used to load User Data from Fire Store DB and send to Different Activity Function to perform their tasks
+    fun loadUserData(activity: Activity){
 //        same as above function just set change to get...refer to code explanation by above comments
         mFireStore.collection(Constants.USERS)
             .document(getCurrentUserID()).get().addOnSuccessListener { document->
-//                we stored the currently Logged in User by converting Current User ID(document) to object of type User data class
+//                we stored the currently Logged in User details by converting Current User ID(document) to object of type User data class
                   val loggedInUser = document.toObject(User::class.java)!!
 
                 when(activity){
@@ -46,6 +48,10 @@ class FireStoreClass {
                     }
                     is MainActivity -> {
                         activity.updateNavigationUserDetails(loggedInUser)
+                    }
+
+                    is MyProfileActivity ->{
+                        activity.setUserDataInUI(loggedInUser)
                     }
                 }
             }.addOnFailureListener {
