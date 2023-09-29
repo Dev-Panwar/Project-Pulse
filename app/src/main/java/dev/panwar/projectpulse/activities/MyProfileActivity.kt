@@ -5,10 +5,14 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
+import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import dev.panwar.projectpulse.R
 import dev.panwar.projectpulse.databinding.ActivityMyProfileBinding
 import dev.panwar.projectpulse.firebase.FireStoreClass
@@ -24,6 +28,7 @@ class MyProfileActivity : BaseActivity() {
 
     private var binding:ActivityMyProfileBinding?=null
     private var mSelectedImageFileUri:Uri?=null
+    private var mProfileImageUrl:String=""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +46,13 @@ class MyProfileActivity : BaseActivity() {
 //            asking for storage permission...This time not using dexter library...using the default method
             else{
                 ActivityCompat.requestPermissions(this,arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), READ_STORAGE_PERMISSION_CODE)
+            }
+        }
+
+
+        binding?.btnUpdate?.setOnClickListener {
+            if (mSelectedImageFileUri!=null){
+                uploadUserImage()
             }
         }
     }
@@ -131,4 +143,37 @@ class MyProfileActivity : BaseActivity() {
         val galleryIntent=Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         startActivityForResult(galleryIntent, PICK_IMAGE_REQUEST_CODE)
     }
+
+//    function for storing our image in storage in firebase
+    private fun uploadUserImage(){
+        showProgressDialog(resources.getString(R.string.please_wait))
+
+        if (mSelectedImageFileUri !=null){
+//            this is our storage reference....inside child we write the name of the image we want to use to store in firebase storage
+            val sref:StorageReference=FirebaseStorage.getInstance().reference.child("USER_IMAGE"+System.currentTimeMillis()+"."+getFileExtension(mSelectedImageFileUri))
+
+            sref.putFile(mSelectedImageFileUri!!).addOnSuccessListener {
+                taskSnapshot ->
+                    Log.i("Firebase Image URL", taskSnapshot.metadata!!.reference!!.downloadUrl.toString())
+
+                taskSnapshot.metadata!!.reference!!.downloadUrl.addOnSuccessListener {
+                    uri ->
+                    Log.i("Downloadable Image URL",uri.toString())
+                    mProfileImageUrl=uri.toString()
+                    hideProgressDialogue()
+//                    TODO update user profile data
+                }
+            }.addOnFailureListener {
+                exception ->
+                Toast.makeText(this, exception.message,Toast.LENGTH_SHORT).show()
+                hideProgressDialogue()
+            }
+        }
+    }
+
+//    to get file extension from link...as we want only .png, .jpeg files to be stored in firebase storage
+    private fun getFileExtension(uri: Uri?):String?{
+        return MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(uri!!))
+    }
+
 }

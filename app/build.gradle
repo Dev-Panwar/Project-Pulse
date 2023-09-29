@@ -65,4 +65,7 @@ dependencies {
 //    for Glide Library, this library helps in downloading image from URL and easily show on device
     implementation 'com.github.bumptech.glide:glide:4.16.0'
 
+//    dependency for using firebase Storage to store our Images
+    implementation("com.google.firebase:firebase-storage-ktx")
+
 }
