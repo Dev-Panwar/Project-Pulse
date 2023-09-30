@@ -17,6 +17,7 @@ import dev.panwar.projectpulse.R
 import dev.panwar.projectpulse.databinding.ActivityMyProfileBinding
 import dev.panwar.projectpulse.firebase.FireStoreClass
 import dev.panwar.projectpulse.models.User
+import dev.panwar.projectpulse.utils.Constants
 import java.io.IOException
 
 class MyProfileActivity : BaseActivity() {
@@ -29,6 +30,7 @@ class MyProfileActivity : BaseActivity() {
     private var binding:ActivityMyProfileBinding?=null
     private var mSelectedImageFileUri:Uri?=null
     private var mProfileImageUrl:String=""
+    private lateinit var mUserDetails:User
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +55,10 @@ class MyProfileActivity : BaseActivity() {
         binding?.btnUpdate?.setOnClickListener {
             if (mSelectedImageFileUri!=null){
                 uploadUserImage()
+            }
+            else{
+                showProgressDialog(resources.getString(R.string.please_wait))
+                updateUserProfileData()
             }
         }
     }
@@ -99,6 +105,8 @@ class MyProfileActivity : BaseActivity() {
     fun setUserDataInUI(user:User){
 //        for setting up the image in MyProfile Ui
 //        line 39 is additional line required as Glide requires Imageview in into() but we have circle imageview
+//        Storing the user in mUserDetails
+        mUserDetails=user
         binding?.ivProfileUserImage?.let {
             Glide
                 .with(this)
@@ -160,8 +168,7 @@ class MyProfileActivity : BaseActivity() {
                     uri ->
                     Log.i("Downloadable Image URL",uri.toString())
                     mProfileImageUrl=uri.toString()
-                    hideProgressDialogue()
-//                    TODO update user profile data
+                    updateUserProfileData()
                 }
             }.addOnFailureListener {
                 exception ->
@@ -174,6 +181,39 @@ class MyProfileActivity : BaseActivity() {
 //    to get file extension from link...as we want only .png, .jpeg files to be stored in firebase storage
     private fun getFileExtension(uri: Uri?):String?{
         return MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(uri!!))
+    }
+
+   private fun updateUserProfileData(){
+        val userHashMap = HashMap<String,Any>()
+        var anyChangesMade=false
+//        if current image and Image in Database if different then only we update
+            if (mProfileImageUrl.isNotEmpty() && mProfileImageUrl!=mUserDetails.image) {
+//            this is the url we get when we upload image from  our device to firebase storage
+            userHashMap[Constants.IMAGE] = mProfileImageUrl
+                anyChangesMade = true
+        }
+            if (binding?.etName?.text.toString() != mUserDetails.name){
+                userHashMap[Constants.NAME] = binding?.etName?.text.toString()
+                anyChangesMade=true
+            }
+
+            if (binding?.etMobile?.text.toString() != mUserDetails.mobile.toString()){
+                userHashMap[Constants.MOBILE] = binding?.etMobile?.text.toString().toLong()
+                anyChangesMade=true
+            }
+
+            if (anyChangesMade){
+                FireStoreClass().updateUserProfileData(this,userHashMap)
+            }
+
+
+    }
+
+
+//    this will will called  profile Update Success after update button is clicked
+     fun profileUpdateSuccess(){
+        hideProgressDialogue()
+        finish()
     }
 
 }

@@ -2,6 +2,7 @@ package dev.panwar.projectpulse.firebase
 
 import android.app.Activity
 import android.util.Log
+import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -83,5 +84,19 @@ class FireStoreClass {
             currentUserId=currentUser.uid
         }
        return currentUserId
+    }
+
+// updating the info in Fire store database of current user Using Hashmap
+    fun updateUserProfileData(activity: MyProfileActivity, userHashmap:HashMap<String,Any>){
+    mFireStore.collection(Constants.USERS)
+        .document(getCurrentUserID()).update(userHashmap).addOnSuccessListener {
+            Log.i(activity.javaClass.simpleName,"Profile data updated successfully")
+            Toast.makeText(activity,"Profile details updated successfully",Toast.LENGTH_SHORT).show()
+            activity.profileUpdateSuccess()
+        }.addOnFailureListener {
+            activity.hideProgressDialogue()
+            Log.i(activity.javaClass.simpleName,"Error while creating a board")
+            Toast.makeText(activity,"Error when updating the profile",Toast.LENGTH_SHORT).show()
+        }
     }
 }
