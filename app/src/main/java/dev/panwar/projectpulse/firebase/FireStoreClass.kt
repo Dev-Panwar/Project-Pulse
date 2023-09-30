@@ -6,10 +6,8 @@ import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
-import dev.panwar.projectpulse.activities.MainActivity
-import dev.panwar.projectpulse.activities.MyProfileActivity
-import dev.panwar.projectpulse.activities.SignInActivity
-import dev.panwar.projectpulse.activities.SignUpActivity
+import dev.panwar.projectpulse.activities.*
+import dev.panwar.projectpulse.models.Board
 import dev.panwar.projectpulse.models.User
 import dev.panwar.projectpulse.utils.Constants
 
@@ -19,7 +17,7 @@ class FireStoreClass {
     private val mFireStore=FirebaseFirestore.getInstance()
 
     fun registerUser(activity:SignUpActivity, userInfo: User){
-//        Adding a new Collection of Data to FireStore DB...with name Users...Then we Giving current user ID to Store in Particular Collection...Then adding all info of Users to the Particular User i.e.(all the parameters of data Class User).
+//        Adding a new Collection of Data to FireStore DB...with name Users...Then we Giving current user ID (id created of User when we SignUp via Firebase authentication) as the Document id to Store in Particular Collection...Then adding all info of Users to the Particular User i.e.(all the parameters of data Class User).
 //        .Then after Success of task UserRegisteredSuccess fun execute
 
          mFireStore.collection(Constants.USERS)
@@ -30,6 +28,21 @@ class FireStoreClass {
 //                 activity.javaClass.name gives the name of Activity
                  e-> Log.e(activity.javaClass.name,"Error Writing Document")
              }
+    }
+
+
+//    Creating a Board in FireStoreClass....Same code as RegisterUser
+    fun createBoard(activity: CreateBoardActivity,board:Board){
+//    no current id in Board() as it auto generates a random id..as here we don't wanna create document with id of current User...
+        mFireStore.collection(Constants.BOARDS).document().set(board, SetOptions.merge()).addOnSuccessListener {
+            Log.e(activity.javaClass.simpleName,"Board Created Successfully.")
+            Toast.makeText(activity,"Board Created Successfully",Toast.LENGTH_SHORT).show()
+            activity.boardCreatedSuccessfully()
+        }.addOnFailureListener {
+            exception->
+            activity.hideProgressDialogue()
+            Log.e(activity.javaClass.simpleName,"Error while Creating Board",exception)
+        }
     }
 
 //    this function is used to load User Data from Fire Store DB and send to Different Activity Function to perform their tasks

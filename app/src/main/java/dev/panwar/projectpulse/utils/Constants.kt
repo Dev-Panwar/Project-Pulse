@@ -10,7 +10,10 @@ import dev.panwar.projectpulse.activities.MyProfileActivity
 
 object Constants {
 
+//    Collection name for users in Firebase
     const val USERS:String= "Users"
+//    Collection name for Boards in firebase
+    const val BOARDS:String="boards"
 
 //    Attributes of User data Class
     const val IMAGE:String="image"

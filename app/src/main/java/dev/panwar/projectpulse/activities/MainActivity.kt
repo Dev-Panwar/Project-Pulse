@@ -18,6 +18,7 @@ import de.hdodenhof.circleimageview.CircleImageView
 import dev.panwar.projectpulse.R
 import dev.panwar.projectpulse.firebase.FireStoreClass
 import dev.panwar.projectpulse.models.User
+import dev.panwar.projectpulse.utils.Constants
 
 
 // Inherited BaseActivity to use it's functions and Navigation view to Access it's menu items
@@ -27,6 +28,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private var nav_profile_img:CircleImageView?=null
     private var nav_username:TextView?=null
     private var drawerLayout:DrawerLayout?=null
+
+    private lateinit var mUserName:String
 
     companion object {
 //        request code for starting MyProfile activity for result
@@ -58,7 +61,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
 //        For Adding a Board on clicking floating add button
         findViewById<FloatingActionButton>(R.id.fab_create_board).setOnClickListener {
-            startActivity(Intent(this,CreateBoardActivity::class.java))
+            val intent=Intent(this,CreateBoardActivity::class.java)
+//            sending Value UserName to CreateBoard Activity...
+            intent.putExtra(Constants.NAME,mUserName)
+            startActivity(intent)
         }
     }
 
@@ -119,6 +125,9 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         Log.d("MainActivity", "User name: ${user.name}")
         Log.d("MainActivity", "User image URL: ${user.image}")
 //        if no User image Found then use ic_user_place_holder
+
+        mUserName=user.name
+
         nav_profile_img?.let {
             Glide
                 .with(this)
