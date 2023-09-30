@@ -22,10 +22,6 @@ import java.io.IOException
 
 class MyProfileActivity : BaseActivity() {
 
-    companion object{
-        private const val READ_STORAGE_PERMISSION_CODE=1
-        private const val PICK_IMAGE_REQUEST_CODE=2
-    }
 
     private var binding:ActivityMyProfileBinding?=null
     private var mSelectedImageFileUri:Uri?=null
@@ -43,11 +39,11 @@ class MyProfileActivity : BaseActivity() {
         binding?.ivProfileUserImage?.setOnClickListener {
 //            first checking the permission to access external storage or not
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-                  showImageChooser()
+                  Constants.showImageChooser(this)
             }
 //            asking for storage permission...This time not using dexter library...using the default method
             else{
-                ActivityCompat.requestPermissions(this,arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), READ_STORAGE_PERMISSION_CODE)
+                ActivityCompat.requestPermissions(this,arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), Constants.READ_STORAGE_PERMISSION_CODE)
             }
         }
 
@@ -67,7 +63,7 @@ class MyProfileActivity : BaseActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (resultCode == Activity.RESULT_OK && requestCode == PICK_IMAGE_REQUEST_CODE && data!!.data !=null){
+        if (resultCode == Activity.RESULT_OK && requestCode == Constants.PICK_IMAGE_REQUEST_CODE && data!!.data !=null){
 //            now we have Uri of image
             mSelectedImageFileUri = data.data
 
@@ -133,11 +129,11 @@ class MyProfileActivity : BaseActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-    if (requestCode == READ_STORAGE_PERMISSION_CODE){
+    if (requestCode == Constants.READ_STORAGE_PERMISSION_CODE){
 //        grant result store the PERMISSION granted or denied information of all requested permission
 //        checking if the permission granted
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-            showImageChooser()
+            Constants.showImageChooser(this)
         }else{
             Toast.makeText(this,"Oops You Just Denied the Permission for Storage. You can allow it from Settings",Toast.LENGTH_SHORT).show()
         }
@@ -145,12 +141,6 @@ class MyProfileActivity : BaseActivity() {
 
     }
 
-//    for showing image chooser
-    private fun showImageChooser(){
-//        making a gallery intent with type Pick as we wanna pick something i.e. image
-        val galleryIntent=Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        startActivityForResult(galleryIntent, PICK_IMAGE_REQUEST_CODE)
-    }
 
 //    function for storing our image in storage in firebase
     private fun uploadUserImage(){
@@ -158,7 +148,7 @@ class MyProfileActivity : BaseActivity() {
 
         if (mSelectedImageFileUri !=null){
 //            this is our storage reference....inside child we write the name of the image we want to use to store in firebase storage
-            val sref:StorageReference=FirebaseStorage.getInstance().reference.child("USER_IMAGE"+System.currentTimeMillis()+"."+getFileExtension(mSelectedImageFileUri))
+            val sref:StorageReference=FirebaseStorage.getInstance().reference.child("USER_IMAGE"+System.currentTimeMillis()+"."+Constants.getFileExtension(this,mSelectedImageFileUri))
 
             sref.putFile(mSelectedImageFileUri!!).addOnSuccessListener {
 //                at this point our image is uploaded to Firebase Storage
@@ -178,11 +168,6 @@ class MyProfileActivity : BaseActivity() {
                 hideProgressDialogue()
             }
         }
-    }
-
-//    to get file extension from link...as we want only .png, .jpeg files to be stored in firebase storage
-    private fun getFileExtension(uri: Uri?):String?{
-        return MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(uri!!))
     }
 
    private fun updateUserProfileData(){
