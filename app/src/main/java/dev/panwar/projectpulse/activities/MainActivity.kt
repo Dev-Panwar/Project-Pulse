@@ -1,6 +1,7 @@
 package dev.panwar.projectpulse.activities
 
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +11,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.bumptech.glide.Glide
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import de.hdodenhof.circleimageview.CircleImageView
@@ -25,6 +27,11 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private var nav_profile_img:CircleImageView?=null
     private var nav_username:TextView?=null
     private var drawerLayout:DrawerLayout?=null
+
+    companion object {
+//        request code for starting MyProfile activity for result
+        const val MY_PROFILE_REQUEST_CODE:Int = 11
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +54,12 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         navView.setNavigationItemSelectedListener(this)
 //        end
         FireStoreClass().loadUserData(this)
+
+
+//        For Adding a Board on clicking floating add button
+        findViewById<FloatingActionButton>(R.id.fab_create_board).setOnClickListener {
+            startActivity(Intent(this,CreateBoardActivity::class.java))
+        }
     }
 
     private fun setupActionBar(){
@@ -82,7 +95,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         when(item.itemId){
             R.id.nav_my_profile -> {
                 val intent = Intent(this, MyProfileActivity::class.java)
-                startActivity(intent)
+//                started the Activity for result because we need to update User image and Data in Header of Navigation view like image and name after user Update Something in MyProfile activity
+                startActivityForResult(intent, MY_PROFILE_REQUEST_CODE)
 
             }
             R.id.nav_sign_out -> {
@@ -117,6 +131,17 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         // Set the username text
         nav_username?.text = user.name
 
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode==Activity.RESULT_OK && requestCode== MY_PROFILE_REQUEST_CODE){
+            FireStoreClass().loadUserData(this)
+        }else{
+            Log.e("cancelled","Cancelled")
+        }
     }
 
 }

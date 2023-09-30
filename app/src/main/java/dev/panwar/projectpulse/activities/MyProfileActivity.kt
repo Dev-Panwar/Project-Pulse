@@ -105,7 +105,7 @@ class MyProfileActivity : BaseActivity() {
     fun setUserDataInUI(user:User){
 //        for setting up the image in MyProfile Ui
 //        line 39 is additional line required as Glide requires Imageview in into() but we have circle imageview
-//        Storing the user in mUserDetails
+//        Storing the user in mUserDetails so that we can use it later in other functions without calling FireStore class again
         mUserDetails=user
         binding?.ivProfileUserImage?.let {
             Glide
@@ -161,12 +161,14 @@ class MyProfileActivity : BaseActivity() {
             val sref:StorageReference=FirebaseStorage.getInstance().reference.child("USER_IMAGE"+System.currentTimeMillis()+"."+getFileExtension(mSelectedImageFileUri))
 
             sref.putFile(mSelectedImageFileUri!!).addOnSuccessListener {
+//                at this point our image is uploaded to Firebase Storage
                 taskSnapshot ->
                     Log.i("Firebase Image URL", taskSnapshot.metadata!!.reference!!.downloadUrl.toString())
 
                 taskSnapshot.metadata!!.reference!!.downloadUrl.addOnSuccessListener {
                     uri ->
                     Log.i("Downloadable Image URL",uri.toString())
+//                    putting the url in mProfileImageUrl that we will use in updateUserProfile Data
                     mProfileImageUrl=uri.toString()
                     updateUserProfileData()
                 }
@@ -184,28 +186,28 @@ class MyProfileActivity : BaseActivity() {
     }
 
    private fun updateUserProfileData(){
-        val userHashMap = HashMap<String,Any>()
-        var anyChangesMade=false
+//       key will be Attributes like image,name,mobile used in FireStore DB
+       val userHashMap = HashMap<String,Any>()
+       var anyChangesMade=false
 //        if current image and Image in Database if different then only we update
-            if (mProfileImageUrl.isNotEmpty() && mProfileImageUrl!=mUserDetails.image) {
+       if (mProfileImageUrl.isNotEmpty() && mProfileImageUrl!=mUserDetails.image) {
 //            this is the url we get when we upload image from  our device to firebase storage
-            userHashMap[Constants.IMAGE] = mProfileImageUrl
-                anyChangesMade = true
-        }
-            if (binding?.etName?.text.toString() != mUserDetails.name){
-                userHashMap[Constants.NAME] = binding?.etName?.text.toString()
-                anyChangesMade=true
-            }
+           userHashMap[Constants.IMAGE] = mProfileImageUrl
+           anyChangesMade = true
+       }
+       if (binding?.etName?.text.toString() != mUserDetails.name){
+           userHashMap[Constants.NAME] = binding?.etName?.text.toString()
+           anyChangesMade=true
+       }
 
-            if (binding?.etMobile?.text.toString() != mUserDetails.mobile.toString()){
-                userHashMap[Constants.MOBILE] = binding?.etMobile?.text.toString().toLong()
-                anyChangesMade=true
-            }
+       if (binding?.etMobile?.text.toString() != mUserDetails.mobile.toString()){
+           userHashMap[Constants.MOBILE] = binding?.etMobile?.text.toString().toLong()
+           anyChangesMade=true
+       }
 
-            if (anyChangesMade){
-                FireStoreClass().updateUserProfileData(this,userHashMap)
-            }
-
+       if (anyChangesMade){
+           FireStoreClass().updateUserProfileData(this,userHashMap)
+       }
 
     }
 
@@ -213,6 +215,8 @@ class MyProfileActivity : BaseActivity() {
 //    this will will called  profile Update Success after update button is clicked
      fun profileUpdateSuccess(){
         hideProgressDialogue()
+//    setting the result okay for the Activity which started this activity for Result i.e. Main Activity
+        setResult(RESULT_OK)
         finish()
     }
 

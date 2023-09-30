@@ -13,7 +13,7 @@
     tools:openDrawer="start"
     >
 
-<!--The Drawer layout include the AppBar..and Appbar include MainContent..i.e. looks like toolBar like thing...On running app see Top bar containing Burger icon(3 horizontal lines) to go to navigation view-->
+<!--The Drawer layout include the AppBar..and Appbar include MainContent..i.e. Screen when Drawer is closed On running app see Top bar containing Burger icon(3 horizontal lines) to go to navigation view-->
 
     <include layout="@layout/app_bar_main"
         android:layout_width="match_parent"
