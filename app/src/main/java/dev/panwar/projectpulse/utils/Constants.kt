@@ -20,6 +20,9 @@ object Constants {
     const val NAME:String="name"
     const val MOBILE:String="mobile"
 
+//    for board Data Class
+    const val ASSIGNED_TO:String="assignedTo"
+
 //   for Start Activity for Result
     const val READ_STORAGE_PERMISSION_CODE=1
     const val PICK_IMAGE_REQUEST_CODE=2

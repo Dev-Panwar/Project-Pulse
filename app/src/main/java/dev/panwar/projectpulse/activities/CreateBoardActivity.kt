@@ -101,6 +101,8 @@ class CreateBoardActivity : BaseActivity() {
 
     fun boardCreatedSuccessfully(){
         hideProgressDialogue()
+//        setting result okay for the activity which started this activity for creating board..i.e. Main Activity so that it can reload data in view
+        setResult(Activity.RESULT_OK)
         finish()
     }
 
