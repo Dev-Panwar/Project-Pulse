@@ -6,8 +6,10 @@ import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.ktx.toObject
 import dev.panwar.projectpulse.activities.*
 import dev.panwar.projectpulse.models.Board
+import dev.panwar.projectpulse.models.Task
 import dev.panwar.projectpulse.models.User
 import dev.panwar.projectpulse.utils.Constants
 
@@ -135,6 +137,19 @@ class FireStoreClass {
             activity.hideProgressDialogue()
             Log.i(activity.javaClass.simpleName,"Error while creating a board")
             Toast.makeText(activity,"Error when updating the profile",Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun getBoardDetails(activity: TaskListActivity,documentId:String) {
+        mFireStore.collection(Constants.BOARDS).document(documentId).get().addOnSuccessListener {
+                document ->
+//            we get the document(Board) with with the given document id
+            Log.i(activity.javaClass.simpleName,document.toString())
+            activity.boardDetails(document.toObject(Board::class.java)!!)
+        }.addOnFailureListener {
+                e ->
+            activity.hideProgressDialogue()
+            Log.e(activity.javaClass.simpleName,"Error While Creating a Board.",e)
         }
     }
 }

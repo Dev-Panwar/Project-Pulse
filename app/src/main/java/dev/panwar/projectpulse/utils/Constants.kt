@@ -27,6 +27,7 @@ object Constants {
     const val READ_STORAGE_PERMISSION_CODE=1
     const val PICK_IMAGE_REQUEST_CODE=2
 
+    const val DOCUMENT_ID:String="documentID"
 
    //  the Common Function that we will use Several Times i.e. in MyProfileActivity and Create Board Activity
     //    for showing image chooser
