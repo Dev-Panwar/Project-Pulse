@@ -2,10 +2,13 @@ package dev.panwar.projectpulse.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.recyclerview.widget.LinearLayoutManager
 import dev.panwar.projectpulse.R
+import dev.panwar.projectpulse.adapters.TaskListItemAdapter
 import dev.panwar.projectpulse.databinding.ActivityTaskListBinding
 import dev.panwar.projectpulse.firebase.FireStoreClass
 import dev.panwar.projectpulse.models.Board
+import dev.panwar.projectpulse.models.Task
 import dev.panwar.projectpulse.utils.Constants
 
 class TaskListActivity : BaseActivity() {
@@ -46,5 +49,19 @@ class TaskListActivity : BaseActivity() {
         hideProgressDialogue()
 //        setting up the action bar after getting the board details...as we need to set toolbar title as name of board
         setupActionBar(board.name)
+
+//    inflating TaskList assigned to Board to our Recycler view adapter
+//    adding initial item to Task list
+    val addTaskList=Task(resources.getString(R.string.add_list))
+    board.taskList.add(addTaskList)
+// setting Layout as Horizontal for recycler view
+    binding?.rvTaskList?.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
+    binding?.rvTaskList?.setHasFixedSize(true)
+
+//    giving the task list Stored in Board
+    val adapter = TaskListItemAdapter(this, board.taskList)
+    binding?.rvTaskList?.adapter=adapter
+
+
     }
 }
