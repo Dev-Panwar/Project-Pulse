@@ -14,6 +14,7 @@ import dev.panwar.projectpulse.utils.Constants
 class TaskListActivity : BaseActivity() {
 
     private var binding:ActivityTaskListBinding?=null
+    private lateinit var mBoardDetails:Board
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,13 +31,13 @@ class TaskListActivity : BaseActivity() {
         FireStoreClass().getBoardDetails(this,boardDocumentId)
     }
 
-    private fun setupActionBar(title:String){
+    private fun setupActionBar(){
         setSupportActionBar(binding?.toolbarTaskListActivity)
         val actionBar= supportActionBar
         if (actionBar!=null){
             actionBar.setDisplayHomeAsUpEnabled(true)
             actionBar.setHomeAsUpIndicator(R.drawable.ic_profile_back)
-            actionBar.title=title
+            actionBar.title=mBoardDetails.name
         }
 
         binding?.toolbarTaskListActivity?.setNavigationOnClickListener {
@@ -46,15 +47,16 @@ class TaskListActivity : BaseActivity() {
 
 //    this function is called from getBoardDetails function in FireStoreClass
     fun boardDetails(board: Board){
+        mBoardDetails=board
         hideProgressDialogue()
 //        setting up the action bar after getting the board details...as we need to set toolbar title as name of board
-        setupActionBar(board.name)
+        setupActionBar()
 
 //    inflating TaskList assigned to Board to our Recycler view adapter
 //    adding initial item to Task list
     val addTaskList=Task(resources.getString(R.string.add_list))
     board.taskList.add(addTaskList)
-// setting Layout as Horizontal for recycler view
+// setting Layout as Horizontal for recycler view.showing different Task Lists
     binding?.rvTaskList?.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
     binding?.rvTaskList?.setHasFixedSize(true)
 
@@ -64,4 +66,45 @@ class TaskListActivity : BaseActivity() {
 
 
     }
+
+
+//    when task list update Success
+    fun addUpdateTaskListSuccess(){
+//        hiding progressBar when update task list success
+        hideProgressDialogue()
+//        progressbar for getting board details
+        showProgressDialog(resources.getString(R.string.please_wait))
+//        specifying which board's detail we want by giving document id
+        FireStoreClass().getBoardDetails(this,mBoardDetails.documentId)
+    }
+
+    fun createTaskList(taskListName:String){
+        val task=Task(taskListName,FireStoreClass().getCurrentUserID())
+//        the previous entry will move by one index
+        mBoardDetails.taskList.add(0,task)
+        mBoardDetails.taskList.removeAt(mBoardDetails.taskList.size-1)
+
+        FireStoreClass().addUpdateTaskList(this, mBoardDetails)
+    }
+
+    fun updateTaskList(position:Int,listName:String,model:Task){
+//        creating new task..
+         val task=Task(listName,model.createdBy)
+//        replacing at specified position
+        mBoardDetails.taskList[position] = task
+        mBoardDetails.taskList.removeAt(mBoardDetails.taskList.size-1)
+
+        showProgressDialog(resources.getString(R.string.please_wait))
+        FireStoreClass().addUpdateTaskList(this, mBoardDetails)
+    }
+
+    fun deleteTaskList(position: Int){
+        mBoardDetails.taskList.removeAt(position)
+        mBoardDetails.taskList.removeAt(mBoardDetails.taskList.size-1)
+
+        showProgressDialog(resources.getString(R.string.please_wait))
+        FireStoreClass().addUpdateTaskList(this, mBoardDetails)
+
+    }
+
 }
