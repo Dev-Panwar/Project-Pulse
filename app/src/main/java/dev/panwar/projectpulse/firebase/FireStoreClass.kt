@@ -27,8 +27,10 @@ class FireStoreClass {
 //                 function of SignUp activity
                  activity.userRegisteredSuccess()
              }.addOnFailureListener {
+
 //                 activity.javaClass.name gives the name of Activity
                  e-> Log.e(activity.javaClass.name,"Error Writing Document")
+
              }
     }
 
@@ -172,7 +174,7 @@ class FireStoreClass {
         }
     }
 
-//    to get Assigned Members list
+//    to get Assigned Members list/fetching members of the board...assignedTo contains ids of User assigned to a board
     fun getAssignedMembersListDetails(activity:MembersActivity,assignedTo:ArrayList<String>){
 //    checking User Collection, where user has id == AssignedTo (any entry of this arraylist)
         mFireStore.collection(Constants.USERS).whereIn(Constants.ID, assignedTo).get()
@@ -193,5 +195,41 @@ class FireStoreClass {
                 activity.hideProgressDialogue()
                 Log.e(activity.javaClass.simpleName,"Error while creating a board",e)
             }
+    }
+
+//    when searching a member...to get User Details
+    fun getMemberDetails(activity:MembersActivity, email:String){
+//        searching user with given email from all users
+        mFireStore.collection(Constants.USERS).whereEqualTo(Constants.EMAIL,email).get()
+            .addOnSuccessListener { document ->
+                 if (document.documents.size>0){
+//                     got the user with given email..index 0 because we have only one user with a single email address
+                     val user=document.documents[0].toObject(User::class.java)!!
+                     activity.memberDetails(user)
+                 }else{
+                      activity.hideProgressDialogue()
+                     activity.showErrorSnackBar("No such member found")
+                 }
+            }
+            .addOnFailureListener {e->
+                activity.hideProgressDialogue()
+                Log.e(activity.javaClass.simpleName,"Error while getting user details",e)
+            }
+    }
+
+//    function for assigning member to board...or updating in firebase....we got board with updated Assigned to parameter from Members Activity which we are updating in database
+    fun assignMemberToBoard(activity: MembersActivity,board: Board,user:User){
+
+        val assignedToHashMap = HashMap<String,Any>()
+    assignedToHashMap[Constants.ASSIGNED_TO]=board.assignedTo
+//    updating assigned to of a particular board
+    mFireStore.collection(Constants.BOARDS).document(board.documentId).update(assignedToHashMap)
+        .addOnSuccessListener {
+            activity.memberAssignedSuccess(user)
+        }
+        .addOnFailureListener { e->
+            activity.hideProgressDialogue()
+            Log.e(activity.javaClass.simpleName,"Error while adding board member",e)
+        }
     }
 }

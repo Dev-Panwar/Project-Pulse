@@ -33,6 +33,7 @@ object Constants {
 
     const val BOARD_DETAIL:String="board_detail"
     const val ID:String="id"
+    const val EMAIL:String="email"
 
    //  the Common Function that we will use Several Times i.e. in MyProfileActivity and Create Board Activity
     //    for showing image chooser
