@@ -1,8 +1,10 @@
 package dev.panwar.projectpulse.activities
 
+import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,20 +21,25 @@ class TaskListActivity : BaseActivity() {
 
     private var binding:ActivityTaskListBinding?=null
     private lateinit var mBoardDetails:Board
+    private lateinit var mBoardDocumentId:String
 
+    companion object{
+        // request code when starting activity for result(MemberActivity)
+        const val MEMBERS_REQUEST_CODE:Int=13
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityTaskListBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
-        var boardDocumentId=""
+
         if (intent.hasExtra(Constants.DOCUMENT_ID)){
-            boardDocumentId=intent.getStringExtra(Constants.DOCUMENT_ID)!!
+            mBoardDocumentId=intent.getStringExtra(Constants.DOCUMENT_ID)!!
         }
 //      we jumped to this activity when we clicked a board
         showProgressDialog(resources.getString(R.string.please_wait))
 //        for getting Board Details
-        FireStoreClass().getBoardDetails(this,boardDocumentId)
+        FireStoreClass().getBoardDetails(this,mBoardDocumentId)
     }
 
     private fun setupActionBar(){
@@ -60,7 +67,9 @@ class TaskListActivity : BaseActivity() {
          R.id.action_members ->{
              val intent=Intent(this, MembersActivity::class.java)
              intent.putExtra(Constants.BOARD_DETAIL,mBoardDetails)
-             startActivity(intent)
+//             starting activity for result because if we add new member to board and press back button to go back to this activity. we have latest BoardDetails(as it contains assigned to variable)..See activity result
+             startActivityForResult(intent, MEMBERS_REQUEST_CODE)
+             return true
 
          }
      }
@@ -150,6 +159,16 @@ class TaskListActivity : BaseActivity() {
         showProgressDialog(resources.getString(R.string.please_wait))
         FireStoreClass().addUpdateTaskList(this, mBoardDetails)
 
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode==Activity.RESULT_OK && requestCode== MEMBERS_REQUEST_CODE){
+           showProgressDialog(resources.getString(R.string.please_wait))
+            FireStoreClass().getBoardDetails(this,mBoardDocumentId)
+        }else{
+            Log.e("Cancelled","Cancelled")
+        }
     }
 
 }

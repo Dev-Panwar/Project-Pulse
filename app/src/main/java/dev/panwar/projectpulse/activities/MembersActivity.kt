@@ -1,5 +1,6 @@
 package dev.panwar.projectpulse.activities
 
+import android.app.Activity
 import android.app.Dialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -23,6 +24,7 @@ class MembersActivity : BaseActivity() {
 
     private lateinit var mBoardDetails:Board
     private lateinit var mAssignedMembersList:ArrayList<User>
+    private var anyChangesMade:Boolean=false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,7 +89,7 @@ class MembersActivity : BaseActivity() {
     dialog.setCanceledOnTouchOutside(false)
 //    add button functionality
     dialog.findViewById<TextView>(R.id.tv_add).setOnClickListener {
-          val email=dialog.findViewById<EditText>(R.id.et_email_search_member).text.toString()
+          val email = dialog.findViewById<EditText>(R.id.et_email_search_member).text.toString()
             if (email.isNotEmpty()){
                 dialog.dismiss()
               showProgressDialog(resources.getString(R.string.please_wait))
@@ -116,10 +118,18 @@ class MembersActivity : BaseActivity() {
         hideProgressDialogue()
         mAssignedMembersList.add(user)
         setupMembersList(mAssignedMembersList)
+        anyChangesMade=true
     }
 
     override fun onDestroy() {
         binding=null
         super.onDestroy()
+    }
+
+    override fun onBackPressed() {
+        if (anyChangesMade){
+            setResult(Activity.RESULT_OK)
+        }
+        super.onBackPressed()
     }
 }
