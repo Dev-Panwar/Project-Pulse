@@ -1,7 +1,10 @@
 package dev.panwar.projectpulse.activities
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import dev.panwar.projectpulse.R
 import dev.panwar.projectpulse.adapters.TaskListItemAdapter
@@ -44,6 +47,24 @@ class TaskListActivity : BaseActivity() {
         binding?.toolbarTaskListActivity?.setNavigationOnClickListener {
             onBackPressed()
         }
+    }
+
+//    inflating menu
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    menuInflater.inflate(R.menu.menu_members,menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+//    implementing menu click
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+     when(item.itemId){
+         R.id.action_members ->{
+             val intent=Intent(this, MembersActivity::class.java)
+             intent.putExtra(Constants.BOARD_DETAIL,mBoardDetails)
+             startActivity(intent)
+
+         }
+     }
+        return super.onOptionsItemSelected(item)
     }
 
 //    this function is called from getBoardDetails function in FireStoreClass

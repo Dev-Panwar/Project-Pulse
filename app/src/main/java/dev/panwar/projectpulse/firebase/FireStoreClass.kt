@@ -171,4 +171,27 @@ class FireStoreClass {
             Log.e(activity.javaClass.simpleName,"Error while creating a Board.",exception)
         }
     }
+
+//    to get Assigned Members list
+    fun getAssignedMembersListDetails(activity:MembersActivity,assignedTo:ArrayList<String>){
+//    checking User Collection, where user has id == AssignedTo (any entry of this arraylist)
+        mFireStore.collection(Constants.USERS).whereIn(Constants.ID, assignedTo).get()
+            .addOnSuccessListener { document ->
+            Log.e(activity.javaClass.simpleName,document.documents.toString())
+// we simply searched for all the documents/users where id==assignedTO
+                val usersList: ArrayList<User> = ArrayList()
+
+                for (i in document.documents){
+                    val user=i.toObject(User::class.java)!!
+                    usersList.add(user)
+                }
+
+//                calling Setup UserList in MembersActivity
+                activity.setupMembersList(usersList)
+        }
+            .addOnFailureListener { e->
+                activity.hideProgressDialogue()
+                Log.e(activity.javaClass.simpleName,"Error while creating a board",e)
+            }
+    }
 }

@@ -16,11 +16,15 @@
         android:theme="@style/Theme.ProjectPulse"
         tools:targetApi="31">
         <activity
+            android:name=".activities.MembersActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.ProjectPulse.NoActionBar"/>
+        <activity
             android:name=".activities.TaskListActivity"
             android:exported="false"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.ProjectPulse.NoActionBar"
-            />
+            android:theme="@style/Theme.ProjectPulse.NoActionBar" />
         <activity
             android:name=".activities.CreateBoardActivity"
             android:exported="false"
