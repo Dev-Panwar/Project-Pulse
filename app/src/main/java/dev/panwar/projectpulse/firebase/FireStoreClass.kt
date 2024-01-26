@@ -6,8 +6,10 @@ import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.ktx.toObject
 import dev.panwar.projectpulse.activities.*
 import dev.panwar.projectpulse.models.Board
+import dev.panwar.projectpulse.models.Task
 import dev.panwar.projectpulse.models.User
 import dev.panwar.projectpulse.utils.Constants
 
@@ -25,8 +27,10 @@ class FireStoreClass {
 //                 function of SignUp activity
                  activity.userRegisteredSuccess()
              }.addOnFailureListener {
+
 //                 activity.javaClass.name gives the name of Activity
                  e-> Log.e(activity.javaClass.name,"Error Writing Document")
+
              }
     }
 
@@ -135,6 +139,97 @@ class FireStoreClass {
             activity.hideProgressDialogue()
             Log.i(activity.javaClass.simpleName,"Error while creating a board")
             Toast.makeText(activity,"Error when updating the profile",Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun getBoardDetails(activity: TaskListActivity,documentId:String) {
+        mFireStore.collection(Constants.BOARDS).document(documentId).get().addOnSuccessListener {
+                document ->
+//            we get the document(Board) with with the given document id
+            Log.i(activity.javaClass.simpleName,document.toString())
+            val board=document.toObject(Board::class.java)!!
+            board.documentId=document.id
+            activity.boardDetails(board)
+        }.addOnFailureListener {
+                e ->
+            activity.hideProgressDialogue()
+            Log.e(activity.javaClass.simpleName,"Error While Creating a Board.",e)
+        }
+    }
+
+//    for updating TaskList attribute of Board in DATABASE
+    fun addUpdateTaskList(activity: TaskListActivity,board: Board){
+//        mapping the Data using Hashmap
+        val taskListHashmap=HashMap<String,Any>()
+        taskListHashmap[Constants.TASK_LIST]=board.taskList
+
+//        storing in database...finding document/board with Boards document id
+        mFireStore.collection(Constants.BOARDS).document(board.documentId).update(taskListHashmap).addOnSuccessListener {
+            Log.e(activity.javaClass.simpleName,"TaskListUpdated Successfully.")
+            activity.addUpdateTaskListSuccess()
+        }.addOnFailureListener {
+            exception->
+            activity.hideProgressDialogue()
+            Log.e(activity.javaClass.simpleName,"Error while creating a Board.",exception)
+        }
+    }
+
+//    to get Assigned Members list/fetching members of the board...assignedTo contains ids of User assigned to a board
+    fun getAssignedMembersListDetails(activity:MembersActivity,assignedTo:ArrayList<String>){
+//    checking User Collection, where user has id == AssignedTo (any entry of this arraylist)
+        mFireStore.collection(Constants.USERS).whereIn(Constants.ID, assignedTo).get()
+            .addOnSuccessListener { document ->
+            Log.e(activity.javaClass.simpleName,document.documents.toString())
+// we simply searched for all the documents/users where id==assignedTO
+                val usersList: ArrayList<User> = ArrayList()
+
+                for (i in document.documents){
+                    val user=i.toObject(User::class.java)!!
+                    usersList.add(user)
+                }
+
+//                calling Setup UserList in MembersActivity
+                activity.setupMembersList(usersList)
+        }
+            .addOnFailureListener { e->
+                activity.hideProgressDialogue()
+                Log.e(activity.javaClass.simpleName,"Error while creating a board",e)
+            }
+    }
+
+//    when searching a member...to get User Details
+    fun getMemberDetails(activity:MembersActivity, email:String){
+//        searching user with given email from all users
+        mFireStore.collection(Constants.USERS).whereEqualTo(Constants.EMAIL,email).get()
+            .addOnSuccessListener { document ->
+                 if (document.documents.size>0){
+//                     got the user with given email..index 0 because we have only one user with a single email address
+                     val user=document.documents[0].toObject(User::class.java)!!
+                     activity.memberDetails(user)
+                 }else{
+                      activity.hideProgressDialogue()
+                     activity.showErrorSnackBar("No such member found")
+                 }
+            }
+            .addOnFailureListener {e->
+                activity.hideProgressDialogue()
+                Log.e(activity.javaClass.simpleName,"Error while getting user details",e)
+            }
+    }
+
+//    function for assigning member to board...or updating in firebase....we got board with updated Assigned to parameter from Members Activity which we are updating in database
+    fun assignMemberToBoard(activity: MembersActivity,board: Board,user:User){
+
+        val assignedToHashMap = HashMap<String,Any>()
+    assignedToHashMap[Constants.ASSIGNED_TO]=board.assignedTo
+//    updating assigned to of a particular board
+    mFireStore.collection(Constants.BOARDS).document(board.documentId).update(assignedToHashMap)
+        .addOnSuccessListener {
+            activity.memberAssignedSuccess(user)
+        }
+        .addOnFailureListener { e->
+            activity.hideProgressDialogue()
+            Log.e(activity.javaClass.simpleName,"Error while adding board member",e)
         }
     }
 }

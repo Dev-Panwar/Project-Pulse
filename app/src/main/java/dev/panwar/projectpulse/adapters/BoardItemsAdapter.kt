@@ -50,7 +50,14 @@ open class BoardItemsAdapter(private val context:Context, private var list:Array
 
 //    when we have list of Board in main content Screen...to know which Board is Clicked we Use this Interface...as after Clicking on particular board we need to go inside That Board and it that will open a Different Activity
     interface OnClickListener{
+//    implemented this onClick function in Main Activity
         fun onClick(position: Int,model:Board)
+    }
+
+//    to move to different activity based on board clicked
+    fun setOnClickListener(onClickListener:OnClickListener){
+//        Assigning our OnClickListener object(OnclickListener Interface) implemented in MainActivity to this class's onCLickListener
+          this.onCLickListener=onClickListener
     }
 
 

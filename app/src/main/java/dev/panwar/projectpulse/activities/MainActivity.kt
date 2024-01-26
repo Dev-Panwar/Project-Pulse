@@ -123,6 +123,15 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
             val adapter=BoardItemsAdapter(this,boardList)
             rvBoardList.adapter=adapter
+//            setOnClickListener function of BoardItemsAdapter class
+            adapter.setOnClickListener(object:BoardItemsAdapter.OnClickListener{
+                override fun onClick(position: Int, model: Board) {
+                    val intent=Intent(this@MainActivity,TaskListActivity::class.java)
+                    intent.putExtra(Constants.DOCUMENT_ID,model.documentId)
+                    startActivity(intent)
+                }
+
+            })
 
         }else{
 
