@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textview.MaterialTextView
 import dev.panwar.projectpulse.R
@@ -95,10 +96,40 @@ class TaskListItemAdapter(private var context: Context,private var list: ArrayLi
                     }
                 }
             }
-
+// to delete a task
             holder.itemView.findViewById<ImageButton>(R.id.ib_delete_list).setOnClickListener {
                 alertDialogForDeleteList(position,model.title)
             }
+
+
+            holder.itemView.findViewById<TextView>(R.id.tv_add_card).setOnClickListener {
+                holder.itemView.findViewById<TextView>(R.id.tv_add_card).visibility=View.GONE
+                holder.itemView.findViewById<CardView>(R.id.cv_add_card).visibility=View.VISIBLE
+            }
+
+            holder.itemView.findViewById<ImageButton>(R.id.ib_close_card_name).setOnClickListener {
+                holder.itemView.findViewById<TextView>(R.id.tv_add_card).visibility=View.VISIBLE
+                holder.itemView.findViewById<CardView>(R.id.cv_add_card).visibility=View.GONE
+            }
+
+            holder.itemView.findViewById<ImageButton>(R.id.ib_done_card_name).setOnClickListener{
+                val cardName=holder.itemView.findViewById<EditText>(R.id.et_card_name).text.toString()
+                if (cardName.isNotEmpty()){
+                    if (context is TaskListActivity){
+                        (context as TaskListActivity).addCardToTaskList(position, cardName)
+                    }else{
+                        Toast.makeText(context,"Please Enter a Card Name.",Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+// Setting up recycler view for card....TaskList activity contains task so it's adapter setup there, now task contains card rv so it's rv setup here
+//            in short rv me rv ho toh first rv ke adapter me second rv ko set karte hain
+            holder.itemView.findViewById<RecyclerView>(R.id.rv_card_list).layoutManager= LinearLayoutManager(context)
+            holder.itemView.findViewById<RecyclerView>(R.id.rv_card_list).setHasFixedSize(true)
+
+            val adapter=CardListItemAdapter(context,model.cards)
+            holder.itemView.findViewById<RecyclerView>(R.id.rv_card_list).adapter=adapter
+
 
         }
     }

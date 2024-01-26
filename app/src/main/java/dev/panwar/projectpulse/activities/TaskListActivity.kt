@@ -8,6 +8,7 @@ import dev.panwar.projectpulse.adapters.TaskListItemAdapter
 import dev.panwar.projectpulse.databinding.ActivityTaskListBinding
 import dev.panwar.projectpulse.firebase.FireStoreClass
 import dev.panwar.projectpulse.models.Board
+import dev.panwar.projectpulse.models.Card
 import dev.panwar.projectpulse.models.Task
 import dev.panwar.projectpulse.utils.Constants
 
@@ -102,6 +103,29 @@ class TaskListActivity : BaseActivity() {
         mBoardDetails.taskList.removeAt(position)
         mBoardDetails.taskList.removeAt(mBoardDetails.taskList.size-1)
 
+        showProgressDialog(resources.getString(R.string.please_wait))
+        FireStoreClass().addUpdateTaskList(this, mBoardDetails)
+
+    }
+
+    fun addCardToTaskList(position: Int,cardName:String){
+        mBoardDetails.taskList.removeAt(mBoardDetails.taskList.size-1)
+
+        val cardAssignedUsersList:ArrayList<String> = ArrayList()
+//        adding current user to cardAssigned user list
+        cardAssignedUsersList.add(FireStoreClass().getCurrentUserID())
+// finally creating a card
+        val card= Card(cardName, FireStoreClass().getCurrentUserID(), cardAssignedUsersList)
+
+//        getting cardList on a particular Task
+        val cardList = mBoardDetails.taskList[position].cards
+//        Now adding the card we created to this CardList
+        cardList.add(card)
+
+//        Now Creating a new task with same name and created by but with updated cardList
+        val task=Task(mBoardDetails.taskList[position].title, mBoardDetails.taskList[position].createdBy, cardList)
+// replacing old task with new one and updating in DB
+        mBoardDetails.taskList[position]=task
         showProgressDialog(resources.getString(R.string.please_wait))
         FireStoreClass().addUpdateTaskList(this, mBoardDetails)
 
