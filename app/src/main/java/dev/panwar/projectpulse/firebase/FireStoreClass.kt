@@ -158,7 +158,7 @@ class FireStoreClass {
     }
 
 //    for updating TaskList attribute of Board in DATABASE
-    fun addUpdateTaskList(activity: TaskListActivity,board: Board){
+    fun addUpdateTaskList(activity: Activity,board: Board){
 //        mapping the Data using Hashmap
         val taskListHashmap=HashMap<String,Any>()
         taskListHashmap[Constants.TASK_LIST]=board.taskList
@@ -166,10 +166,19 @@ class FireStoreClass {
 //        storing in database...finding document/board with Boards document id
         mFireStore.collection(Constants.BOARDS).document(board.documentId).update(taskListHashmap).addOnSuccessListener {
             Log.e(activity.javaClass.simpleName,"TaskListUpdated Successfully.")
-            activity.addUpdateTaskListSuccess()
+            if (activity is TaskListActivity) {
+                activity.addUpdateTaskListSuccess()
+            }
+            else if (activity is CardDetailsActivity){
+                activity.addUpdateTaskListSuccess()
+            }
         }.addOnFailureListener {
             exception->
-            activity.hideProgressDialogue()
+            if (activity is TaskListActivity) {
+                activity.hideProgressDialogue()
+            }else if(activity is CardDetailsActivity){
+                activity.hideProgressDialogue()
+            }
             Log.e(activity.javaClass.simpleName,"Error while creating a Board.",exception)
         }
     }
