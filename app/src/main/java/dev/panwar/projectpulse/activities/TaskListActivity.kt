@@ -24,8 +24,10 @@ class TaskListActivity : BaseActivity() {
     private lateinit var mBoardDocumentId:String
 
     companion object{
-        // request code when starting activity for result(MemberActivity)
+        // request code when starting activity for result(MemberActivity)...
         const val MEMBERS_REQUEST_CODE:Int=13
+        // request code when starting activity for result(CardDetailActivity)...
+        const val CARD_DETAIL_REQUEST_CODE:Int=14
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -163,7 +165,7 @@ class TaskListActivity : BaseActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode==Activity.RESULT_OK && requestCode== MEMBERS_REQUEST_CODE){
+        if (resultCode==Activity.RESULT_OK && requestCode== MEMBERS_REQUEST_CODE || requestCode== CARD_DETAIL_REQUEST_CODE ){
            showProgressDialog(resources.getString(R.string.please_wait))
             FireStoreClass().getBoardDetails(this,mBoardDocumentId)
         }else{
@@ -171,8 +173,17 @@ class TaskListActivity : BaseActivity() {
         }
     }
 
+//    will be called from TaskListItemAdapter..to move to CardActivity containing card At Specific Position
     fun cardDetails(taskListPosition:Int, cardPosition:Int){
-        startActivity(Intent(this,CardDetailsActivity::class.java))
+    val intent=Intent(this,CardDetailsActivity::class.java)
+    intent.putExtra(Constants.BOARD_DETAIL,mBoardDetails)
+    intent.putExtra(Constants.TASK_LIST_ITEM_POSITION,taskListPosition)
+    intent.putExtra(Constants.CARD_LIST_ITEM_POSITION,cardPosition)
+//    this is because if we come back from CardDetail activity and any changes made in that Activity, we have the Updated data of Board
+        startActivityForResult(intent, CARD_DETAIL_REQUEST_CODE)
+//    starting Activity Transition
+    overridePendingTransition(com.google.android.material.R.anim.abc_fade_in, 1)
+
     }
 
 }

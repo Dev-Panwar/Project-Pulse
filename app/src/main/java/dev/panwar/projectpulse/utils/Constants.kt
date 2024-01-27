@@ -35,6 +35,9 @@ object Constants {
     const val ID:String="id"
     const val EMAIL:String="email"
 
+    const val TASK_LIST_ITEM_POSITION:String="task_list_item_position"
+    const val CARD_LIST_ITEM_POSITION:String="card_list_item_position"
+
    //  the Common Function that we will use Several Times i.e. in MyProfileActivity and Create Board Activity
     //    for showing image chooser
     fun showImageChooser(activity: Activity){
