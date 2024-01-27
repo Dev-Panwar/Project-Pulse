@@ -30,15 +30,24 @@ class CardListItemAdapter(private var context: Context, private var list: ArrayL
 
         if (holder is MyViewHolder){
             holder.itemView.findViewById<TextView>(R.id.tv_card_name).text=model.name
+
+//            calling onClick at specific position...this setOnCLickListener is Android Function not this class's
+            holder.itemView.setOnClickListener {
+                if (onClickListener!=null){
+                    onClickListener!!.onClick(position)
+                }
+            }
         }
     }
 
+//    called from TaskListItemAdapter because rv cardList is inside rv taskList
     fun setOnClickListener(onClickListener:OnClickListener){
         this.onClickListener=onClickListener
     }
 
+//    implemented in TaskListItem Adapter
     interface OnClickListener{
-        fun onClick(position: Int,card: Card)
+        fun onClick(position: Int)
     }
 
     //    our view Holder
