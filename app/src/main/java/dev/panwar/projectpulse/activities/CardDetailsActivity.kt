@@ -2,6 +2,7 @@ package dev.panwar.projectpulse.activities
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -20,6 +21,9 @@ import dev.panwar.projectpulse.dialogs.MembersListDialog
 import dev.panwar.projectpulse.firebase.FireStoreClass
 import dev.panwar.projectpulse.models.*
 import dev.panwar.projectpulse.utils.Constants
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 class CardDetailsActivity : BaseActivity() {
 
@@ -30,6 +34,7 @@ class CardDetailsActivity : BaseActivity() {
     private var mCardPosition:Int=-1
     private var mSelectedColor=""
     private lateinit var mMembersDetailList:ArrayList<User>
+    private var mSelectedDueDateMilliSeconds:Long=0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +72,19 @@ class CardDetailsActivity : BaseActivity() {
         }
 
         setupSelectedMembersList()
+
+//        Showing up the Due date in UI
+        mSelectedDueDateMilliSeconds=mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].dueDate
+        if (mSelectedDueDateMilliSeconds >0){
+            val sdf=SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH)
+            val selectedDate = sdf.format(Date(mSelectedDueDateMilliSeconds))
+            binding?.tvSelectDueDate?.text= selectedDate
+
+        }
+
+        binding?.tvSelectDueDate?.setOnClickListener {
+            showDataPicker()
+        }
     }
 
     private fun setupActionBar(){
@@ -127,7 +145,7 @@ class CardDetailsActivity : BaseActivity() {
 //    called when we press update button
     private fun updateCardDetails(){
 //        created a new card with updated details
-        val card=Card(binding?.etNameCardDetails?.text.toString(),mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].createdBy,mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo,mSelectedColor)
+        val card=Card(binding?.etNameCardDetails?.text.toString(),mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].createdBy,mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo,mSelectedColor,mSelectedDueDateMilliSeconds)
 
     // optimization...when we update our Task List...by default a new task is created at end with name addList due to our logic
     val taskList:ArrayList<Task> = mBoardDetails.taskList
@@ -320,6 +338,50 @@ class CardDetailsActivity : BaseActivity() {
             binding?.rvSelectedMembersList?.visibility=View.GONE
         }
 
+    }
+
+    private fun showDataPicker() {
+
+        val c = Calendar.getInstance()
+        val year = c.get(Calendar.YEAR) // Returns the value of the given calendar field. This indicates YEAR
+        val month = c.get(Calendar.MONTH) // This indicates the Month
+        val day = c.get(Calendar.DAY_OF_MONTH) // This indicates the Day
+
+
+        val dpd = DatePickerDialog(
+            this,
+            DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
+                /*
+                  The listener used to indicate the user has finished selecting a date.
+
+                 Here the selected date is set into format i.e : day/Month/Year
+                  And the month is counted in java is 0 to 11 so we need to add +1 so it can be as selected.*/
+
+                // Here we have appended 0 if the selected day is smaller than 10 to make it double digit value.
+                val sDayOfMonth = if (dayOfMonth < 10) "0$dayOfMonth" else "$dayOfMonth"
+                // Here we have appended 0 if the selected month is smaller than 10 to make it double digit value.
+                val sMonthOfYear =
+                    if ((monthOfYear + 1) < 10) "0${monthOfYear + 1}" else "${monthOfYear + 1}"
+
+                val selectedDate = "$sDayOfMonth/$sMonthOfYear/$year"
+                // Selected date it set to the TextView to make it visible to user.
+                binding?.tvSelectDueDate?.text = selectedDate
+
+
+                val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH)
+
+                // The formatter will parse the selected date in to Date object
+                // so we can simply get date in to milliseconds.
+                val theDate = sdf.parse(selectedDate)
+
+//                 Here we have get the time in milliSeconds from Date object
+                mSelectedDueDateMilliSeconds = theDate!!.time
+            },
+            year,
+            month,
+            day
+        )
+        dpd.show() // It is used to show the datePicker Dialog.
     }
 
 
