@@ -6,6 +6,7 @@ import android.os.Parcelable
 data class Card(
     val name:String="",
     val createdBy:String="",
+//    assignTo contains ids of assigned members/User
     val assignedTo:ArrayList<String> = ArrayList(),
     val labelColor:String=""
 ):Parcelable {
@@ -13,7 +14,8 @@ data class Card(
         source.readString()!!,
         source.readString()!!,
 //    written by me
-        source.createStringArrayList()!!
+        source.createStringArrayList()!!,
+                source.readString()!!
     ) {
     }
 
@@ -21,6 +23,7 @@ data class Card(
         dest.writeString(name)
         dest.writeString(createdBy)
         dest.writeStringList(assignedTo)
+        dest.writeString(labelColor)
     }
 
     override fun describeContents(): Int {

@@ -184,7 +184,7 @@ class FireStoreClass {
     }
 
 //    to get Assigned Members list/fetching members of the board...assignedTo contains ids of User assigned to a board
-    fun getAssignedMembersListDetails(activity:MembersActivity,assignedTo:ArrayList<String>){
+    fun getAssignedMembersListDetails(activity:Activity,assignedTo:ArrayList<String>){
 //    checking User Collection, where user has id == AssignedTo (any entry of this arraylist)
         mFireStore.collection(Constants.USERS).whereIn(Constants.ID, assignedTo).get()
             .addOnSuccessListener { document ->
@@ -197,11 +197,21 @@ class FireStoreClass {
                     usersList.add(user)
                 }
 
+                if (activity is MembersActivity) {
 //                calling Setup UserList in MembersActivity
-                activity.setupMembersList(usersList)
+                    activity.setupMembersList(usersList)
+                }
+                else if (activity is TaskListActivity){
+                    activity.boardMembersDetailList(usersList)
+                }
         }
             .addOnFailureListener { e->
-                activity.hideProgressDialogue()
+                if (activity is MembersActivity){
+                    activity.hideProgressDialogue()
+                }
+                else if (activity is TaskListActivity){
+                    activity.hideProgressDialogue()
+                }
                 Log.e(activity.javaClass.simpleName,"Error while creating a board",e)
             }
     }

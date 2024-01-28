@@ -8,14 +8,17 @@ import android.os.Bundle
 import android.provider.CalendarContract.Colors
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import dev.panwar.projectpulse.R
+import dev.panwar.projectpulse.adapters.CardMemberListItemsAdapter
 import dev.panwar.projectpulse.databinding.ActivityCardDetailsBinding
 import dev.panwar.projectpulse.dialogs.LabelColorListDialog
+import dev.panwar.projectpulse.dialogs.MembersListDialog
 import dev.panwar.projectpulse.firebase.FireStoreClass
-import dev.panwar.projectpulse.models.Board
-import dev.panwar.projectpulse.models.Card
-import dev.panwar.projectpulse.models.Task
+import dev.panwar.projectpulse.models.*
 import dev.panwar.projectpulse.utils.Constants
 
 class CardDetailsActivity : BaseActivity() {
@@ -26,6 +29,7 @@ class CardDetailsActivity : BaseActivity() {
     private var mTaskListPosition:Int=-1
     private var mCardPosition:Int=-1
     private var mSelectedColor=""
+    private lateinit var mMembersDetailList:ArrayList<User>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +43,13 @@ class CardDetailsActivity : BaseActivity() {
 //        to directly focus/ put cursor on etCardNameDetails when we open activity...
         binding?.etNameCardDetails?.setSelection(binding?.etNameCardDetails?.text?.length!!)
 
+//        getting label color from DB
+        mSelectedColor=mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].labelColor
+        if (mSelectedColor.isNotEmpty()){
+            setColor()
+        }
+
+
         binding?.btnUpdateCardDetails?.setOnClickListener {
             if (binding?.etNameCardDetails?.text.toString().isNotEmpty()){
                 updateCardDetails()
@@ -50,6 +61,12 @@ class CardDetailsActivity : BaseActivity() {
         binding?.tvSelectLabelColor?.setOnClickListener {
             labelColorsListDialog()
         }
+
+        binding?.tvSelectMembers?.setOnClickListener {
+            membersListDialog()
+        }
+
+        setupSelectedMembersList()
     }
 
     private fun setupActionBar(){
@@ -78,6 +95,10 @@ class CardDetailsActivity : BaseActivity() {
 
     if (intent.hasExtra(Constants.CARD_LIST_ITEM_POSITION)){
         mCardPosition=intent.getIntExtra(Constants.CARD_LIST_ITEM_POSITION,-1)
+    }
+
+    if (intent.hasExtra(Constants.BOARD_MEMBERS_LIST)){
+        mMembersDetailList=intent.getParcelableArrayListExtra((Constants.BOARD_MEMBERS_LIST))!!
     }
     }
 
@@ -195,15 +216,108 @@ class CardDetailsActivity : BaseActivity() {
 
 //    creating list dialog..Initialising
     val listDialog = object : LabelColorListDialog(
-        this,colorsList,resources.getString(R.string.str_select_label_color)){
+        this,colorsList,resources.getString(R.string.str_select_label_color),mSelectedColor){
         override fun onItemSelected(color: String) {
             mSelectedColor=color
             setColor()
+//            updating in DB
             updateCardDetails()
         }
 
     }
     listDialog.show()
+
+    }
+
+    private fun membersListDialog(){
+        var cardAssignedMembersList=mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo
+
+
+        if (cardAssignedMembersList.size>0){
+//            mMemberDetailList contains Board Assigned Members Details
+            for (i in mMembersDetailList.indices){
+                for (j in cardAssignedMembersList){
+//                    means out of boardMembers jin members ko card Assign hua hai..unko Selected=true kiya hai
+                    if (mMembersDetailList[i].id==j){
+                        mMembersDetailList[i].selected=true
+                    }
+                }
+            }
+        }else{
+//            if no members Assigned to card till now then all members have selected = false
+            for (i in mMembersDetailList.indices){
+                mMembersDetailList[i].selected=false
+            }
+        }
+
+        //        creating memberList Dialog...Initialising
+        val listDialog = object : MembersListDialog (
+            this,mMembersDetailList,resources.getString(R.string.str_select_member)
+                ){
+            override fun onItemSelected(user: User, action: String) {
+                if (action == Constants.SELECT){
+//                    if member already not assigned to card then
+                    if (!mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo.contains(user.id)){
+                        mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo.add(user.id)
+                    }
+                }else{
+                    mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo.remove(user.id)
+
+                    for ( i in mMembersDetailList.indices){
+                        if (mMembersDetailList[i].id==user.id){
+                            mMembersDetailList[i].selected=false
+                        }
+                    }
+                }
+//                    setting up List Again..as changes made
+                setupSelectedMembersList()
+            }
+
+        }
+        listDialog.show()
+
+    }
+
+    private fun setupSelectedMembersList(){
+//        Members assigned to card
+        val cardAssignedMembersList=mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo
+
+//        list containing selected Members
+        val selectedMembersList:ArrayList<SelectedMembers> = ArrayList()
+
+        for (i in mMembersDetailList.indices){
+            for (j in cardAssignedMembersList){
+//                    means out of boardMembers jin members ko card Assign hua hai..unko Selected=true kiya hai
+                if (mMembersDetailList[i].id==j){
+                    val selectedMember=SelectedMembers(mMembersDetailList[i].id,mMembersDetailList[i].image)
+                    selectedMembersList.add(selectedMember)
+                }
+            }
+        }
+
+        if (selectedMembersList.size>0){
+//            Empty Member because InPlace of it we place iv_add_member
+            selectedMembersList.add(SelectedMembers("",""))
+//            hiding textView select Member
+            binding?.tvSelectMembers?.visibility=View.GONE
+//            showing RV to show profiles added
+            binding?.rvSelectedMembersList?.visibility=View.VISIBLE
+
+//            setting up RV
+            binding?.rvSelectedMembersList?.layoutManager=GridLayoutManager(this,6)
+            val adapter=CardMemberListItemsAdapter(this,selectedMembersList)
+            binding?.rvSelectedMembersList?.adapter=adapter
+//            implementing onClickListener interface
+            adapter.setOnClickListener(object :CardMemberListItemsAdapter.OnClickListener{
+                override fun onClick() {
+                    membersListDialog()
+                }
+
+            })
+        }else{
+            binding?.tvSelectMembers?.visibility=View.VISIBLE
+            binding?.rvSelectedMembersList?.visibility=View.GONE
+        }
 
     }
 

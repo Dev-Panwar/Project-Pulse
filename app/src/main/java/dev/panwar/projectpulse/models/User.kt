@@ -9,7 +9,8 @@ data class User(
     val email:String="",
     val image:String="",
     val mobile:Long=0,
-    val fcmToken:String="" //To know that specific User is Logged IN
+    val fcmToken:String="", //To know that specific User is Logged IN
+    var selected:Boolean=false
 ): Parcelable {
 //    All code below is auto generated after making it parcelable with the help of Parcelable code generator plugin
     constructor(parcel: Parcel) : this(

@@ -15,6 +15,7 @@ import dev.panwar.projectpulse.firebase.FireStoreClass
 import dev.panwar.projectpulse.models.Board
 import dev.panwar.projectpulse.models.Card
 import dev.panwar.projectpulse.models.Task
+import dev.panwar.projectpulse.models.User
 import dev.panwar.projectpulse.utils.Constants
 
 class TaskListActivity : BaseActivity() {
@@ -22,6 +23,7 @@ class TaskListActivity : BaseActivity() {
     private var binding:ActivityTaskListBinding?=null
     private lateinit var mBoardDetails:Board
     private lateinit var mBoardDocumentId:String
+    private lateinit var mAssignedMemberDetailList:ArrayList<User>
 
     companion object{
         // request code when starting activity for result(MemberActivity)...
@@ -97,7 +99,15 @@ class TaskListActivity : BaseActivity() {
     val adapter = TaskListItemAdapter(this, board.taskList)
     binding?.rvTaskList?.adapter=adapter
 
+    showProgressDialog(resources.getString(R.string.please_wait))
+    FireStoreClass().getAssignedMembersListDetails(this,mBoardDetails.assignedTo)
 
+    }
+
+//    called from fireStore class
+    fun boardMembersDetailList(list:ArrayList<User>){
+        mAssignedMemberDetailList=list
+        hideProgressDialogue()
     }
 
 
@@ -179,6 +189,7 @@ class TaskListActivity : BaseActivity() {
     intent.putExtra(Constants.BOARD_DETAIL,mBoardDetails)
     intent.putExtra(Constants.TASK_LIST_ITEM_POSITION,taskListPosition)
     intent.putExtra(Constants.CARD_LIST_ITEM_POSITION,cardPosition)
+    intent.putExtra(Constants.BOARD_MEMBERS_LIST,mAssignedMemberDetailList)
 //    this is because if we come back from CardDetail activity and any changes made in that Activity, we have the Updated data of Board
         startActivityForResult(intent, CARD_DETAIL_REQUEST_CODE)
 //    starting Activity Transition
