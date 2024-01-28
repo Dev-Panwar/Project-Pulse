@@ -23,7 +23,7 @@ class TaskListActivity : BaseActivity() {
     private var binding:ActivityTaskListBinding?=null
     private lateinit var mBoardDetails:Board
     private lateinit var mBoardDocumentId:String
-    private lateinit var mAssignedMemberDetailList:ArrayList<User>
+    lateinit var mAssignedMemberDetailList:ArrayList<User>
 
     companion object{
         // request code when starting activity for result(MemberActivity)...
@@ -87,17 +87,7 @@ class TaskListActivity : BaseActivity() {
 //        setting up the action bar after getting the board details...as we need to set toolbar title as name of board
         setupActionBar()
 
-//    inflating TaskList assigned to Board to our Recycler view adapter
-//    adding initial item to Task list
-    val addTaskList=Task(resources.getString(R.string.add_list))
-    board.taskList.add(addTaskList)
-// setting Layout as Horizontal for recycler view.showing different Task Lists
-    binding?.rvTaskList?.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
-    binding?.rvTaskList?.setHasFixedSize(true)
 
-//    giving the task list Stored in Board
-    val adapter = TaskListItemAdapter(this, board.taskList)
-    binding?.rvTaskList?.adapter=adapter
 
     showProgressDialog(resources.getString(R.string.please_wait))
     FireStoreClass().getAssignedMembersListDetails(this,mBoardDetails.assignedTo)
@@ -108,6 +98,18 @@ class TaskListActivity : BaseActivity() {
     fun boardMembersDetailList(list:ArrayList<User>){
         mAssignedMemberDetailList=list
         hideProgressDialogue()
+
+    //    inflating TaskList assigned to Board to our Recycler view adapter
+//    adding initial item to Task list
+    val addTaskList=Task(resources.getString(R.string.add_list))
+    mBoardDetails.taskList.add(addTaskList)
+// setting Layout as Horizontal for recycler view.showing different Task Lists
+    binding?.rvTaskList?.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
+    binding?.rvTaskList?.setHasFixedSize(true)
+
+//    giving the task list Stored in Board
+    val adapter = TaskListItemAdapter(this, mBoardDetails.taskList)
+    binding?.rvTaskList?.adapter=adapter
     }
 
 

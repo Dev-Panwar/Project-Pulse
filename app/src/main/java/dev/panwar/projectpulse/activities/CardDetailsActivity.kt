@@ -305,7 +305,8 @@ class CardDetailsActivity : BaseActivity() {
 
 //            setting up RV
             binding?.rvSelectedMembersList?.layoutManager=GridLayoutManager(this,6)
-            val adapter=CardMemberListItemsAdapter(this,selectedMembersList)
+//            here we are allowing that we can assign members
+            val adapter=CardMemberListItemsAdapter(this,selectedMembersList,true)
             binding?.rvSelectedMembersList?.adapter=adapter
 //            implementing onClickListener interface
             adapter.setOnClickListener(object :CardMemberListItemsAdapter.OnClickListener{
