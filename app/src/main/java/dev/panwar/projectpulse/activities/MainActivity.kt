@@ -2,7 +2,9 @@ package dev.panwar.projectpulse.activities
 
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
@@ -14,9 +16,11 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.messaging.FirebaseMessaging
 import de.hdodenhof.circleimageview.CircleImageView
 import dev.panwar.projectpulse.R
 import dev.panwar.projectpulse.adapters.BoardItemsAdapter
@@ -35,6 +39,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private var drawerLayout:DrawerLayout?=null
 
     private lateinit var mUserName:String
+//    we will use this to store FCM token received on phone permanently
+    private lateinit var mSharedPreferences:SharedPreferences
 
     companion object {
 //        request code for starting MyProfile activity for result
@@ -63,6 +69,19 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 //       For NavigationView.OnNavigationItemSelectedListener
         navView.setNavigationItemSelectedListener(this)
 //        end
+
+//        initialising shared preferences..mode private means data available inside our app only
+        mSharedPreferences=this.getSharedPreferences(Constants.PROJECTPULSE_PREFERENCES, Context.MODE_PRIVATE)
+
+//   getting if the token has been updated in db or not.
+        val tokenUpdated= mSharedPreferences.getBoolean(Constants.FCM_TOKEN_UPDATED,false)
+
+        if (tokenUpdated){
+            showProgressDialog(resources.getString(R.string.please_wait))
+            FireStoreClass().loadUserData(this,true)
+        }else{
+            updateFCMToken(FirebaseMessaging.getInstance().token.toString())
+        }
 
 //        readBoardList=true is just an Optimization that when we updateNavigationDetails it does not load Board Data Also as updateNavigationDetails uses getBoardList function...it should only load User data to update in Navigation view header
 //        true means board data will reload
@@ -151,6 +170,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             }
             R.id.nav_sign_out -> {
               FirebaseAuth.getInstance().signOut()
+
+//                when we sign Out we reset Shared Preferences
+                mSharedPreferences.edit().clear().apply()
+
 //                moving back to the intro activity
                 val intent=Intent(this,IntroActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -164,7 +187,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
 
     fun updateNavigationUserDetails(user:User,readBoardsList:Boolean){
-
+     hideProgressDialogue()
         Log.d("MainActivity", "updateNavigationUserDetails called with user: ${user.name}")
         Log.d("MainActivity", "User name: ${user.name}")
         Log.d("MainActivity", "User image URL: ${user.image}")
@@ -208,5 +231,26 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             Log.e("cancelled","Cancelled")
         }
     }
+
+//    will be called from firebase class when fcm token successfully updated in Firebase..check usage of this function
+    fun tokenUpdateSuccess(){
+       hideProgressDialogue()
+        val editor:SharedPreferences.Editor = mSharedPreferences.edit()
+        editor.putBoolean(Constants.FCM_TOKEN_UPDATED, true)
+        editor.apply()
+        showProgressDialog(resources.getString(R.string.please_wait))
+        FireStoreClass().loadUserData(this,true)
+    }
+
+//    updating token in FireBase...first this function will be called by us...
+    private fun updateFCMToken(token:String){
+        val userHashmap= HashMap<String,Any>()
+        userHashmap[Constants.FCM_TOKEN] = token
+
+        showProgressDialog(resources.getString(R.string.please_wait))
+        FireStoreClass().updateUserProfileData(this,userHashmap)
+    }
+
+
 
 }
