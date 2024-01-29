@@ -199,4 +199,17 @@ class TaskListActivity : BaseActivity() {
 
     }
 
+//    for updating in DB after drag and drop
+    fun updateCardsInTaskList(taskListPosition: Int,cards:ArrayList<Card>){
+
+    mBoardDetails.taskList.removeAt(mBoardDetails.taskList.size-1)
+//    replacing the cardList with new list in specific task
+    mBoardDetails.taskList[taskListPosition].cards=cards
+
+//    updating in Firebase
+    showProgressDialog(resources.getString(R.string.please_wait))
+    FireStoreClass().addUpdateTaskList(this,mBoardDetails)
+
+    }
+
 }

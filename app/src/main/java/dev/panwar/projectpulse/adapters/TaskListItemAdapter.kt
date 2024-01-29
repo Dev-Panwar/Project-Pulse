@@ -13,14 +13,21 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textview.MaterialTextView
 import dev.panwar.projectpulse.R
 import dev.panwar.projectpulse.activities.TaskListActivity
 import dev.panwar.projectpulse.models.Task
+import java.util.Collections
 
 class TaskListItemAdapter(private var context: Context,private var list: ArrayList<Task>):RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    private var mPositionDraggedFrom=-1
+    private var mPositionDraggedTo=-1
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
 //        inflating the view
         val view =LayoutInflater.from(context).inflate(R.layout.item_task,parent,false)
@@ -141,7 +148,57 @@ class TaskListItemAdapter(private var context: Context,private var list: ArrayLi
 
                 }
             )
+// For drag and Drop card in a Particular Task
+         val dividerItemDecoration=DividerItemDecoration(context,DividerItemDecoration.VERTICAL)
+            holder.itemView.findViewById<RecyclerView>(R.id.rv_card_list).addItemDecoration(dividerItemDecoration)
 
+//            setting up the drag up and down only
+            val helper = ItemTouchHelper(object: ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN,0){
+                override fun onMove(
+                    recyclerView: RecyclerView,
+                    dragged: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder
+                ): Boolean {
+//                    dragged from position
+                    val draggedPosition=dragged.adapterPosition
+//                    dragged to position
+                    val targetPosition=target.adapterPosition
+
+                    if (mPositionDraggedFrom==-1){
+                        mPositionDraggedFrom=draggedPosition
+                    }
+                    mPositionDraggedTo=targetPosition
+//                    Swapping the cards Position
+                    Collections.swap(list[position].cards,draggedPosition,targetPosition)
+//                   notifying adapter about swap
+                    adapter.notifyItemMoved(draggedPosition,targetPosition)
+//                  it will return true if moved if not then false
+                    return false
+                }
+//               not required
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                }
+
+//                function is auto called after the Swiping is done
+                override fun clearView(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder
+                ) {
+                    super.clearView(recyclerView, viewHolder)
+                      if (mPositionDraggedFrom !=-1 && mPositionDraggedTo!=-1 && mPositionDraggedFrom!=mPositionDraggedTo){
+
+//                          calling Function in TaskList activity to update changes in database with new cardList
+                          (context as TaskListActivity).updateCardsInTaskList(position,list[position].cards)
+                      }
+//                  Setting up both as -1 again when everything done
+                    mPositionDraggedFrom=-1
+                    mPositionDraggedTo=-1
+
+                }
+
+            })
+            helper.attachToRecyclerView(holder.itemView.findViewById(R.id.rv_card_list))
+//            drag and drop feature completed here
 
         }
     }
