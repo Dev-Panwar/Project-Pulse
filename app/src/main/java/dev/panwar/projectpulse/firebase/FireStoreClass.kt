@@ -27,10 +27,8 @@ class FireStoreClass {
 //                 function of SignUp activity
                  activity.userRegisteredSuccess()
              }.addOnFailureListener {
-
 //                 activity.javaClass.name gives the name of Activity
                  e-> Log.e(activity.javaClass.name,"Error Writing Document")
-
              }
     }
 

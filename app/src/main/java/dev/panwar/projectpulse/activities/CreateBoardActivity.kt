@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -40,15 +41,30 @@ class CreateBoardActivity : BaseActivity() {
 
 
         binding?.ivBoardImage?.setOnClickListener {
-            //   first checking the permission to access external storage or not
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-                Constants.showImageChooser(this)
-            }
-//            asking for storage permission...This time not using dexter library...using the default method
-            else{
-                ActivityCompat.requestPermissions(this,arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), Constants.READ_STORAGE_PERMISSION_CODE)
+            // Checking permissions dynamically based on Android version
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13 and above
+                if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
+                    Constants.showImageChooser(this)
+                } else {
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(android.Manifest.permission.READ_MEDIA_IMAGES),
+                        Constants.READ_STORAGE_PERMISSION_CODE
+                    )
+                }
+            } else { // Android 12 and below
+                if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    Constants.showImageChooser(this)
+                } else {
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                        Constants.READ_STORAGE_PERMISSION_CODE
+                    )
+                }
             }
         }
+
 
         binding?.btnCreate?.setOnClickListener {
             if (mSelectedImageFileUri!=null){
@@ -144,7 +160,7 @@ class CreateBoardActivity : BaseActivity() {
     }
 
 
-    //    this inbuilt function will be called automatically after the Permission is granted/or denied...That's why we gave the REQUEST_CODE
+    // This inbuilt function will be called automatically after the permission is granted/denied
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -152,17 +168,24 @@ class CreateBoardActivity : BaseActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        if (requestCode == Constants.READ_STORAGE_PERMISSION_CODE){
-//        grant result store the PERMISSION granted or denied information of all requested permission
-//        checking if the permission granted
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                Constants.showImageChooser(this)
-            }else{
-                Toast.makeText(this,"Oops You Just Denied the Permission for Storage. You can allow it from Settings",
-                    Toast.LENGTH_SHORT).show()
+        if (requestCode == Constants.READ_STORAGE_PERMISSION_CODE) {
+            // Grant result stores the PERMISSION granted or denied information of all requested permissions
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Check which permission was granted
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            permissions.contains(android.Manifest.permission.READ_MEDIA_IMAGES)) ||
+                    (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU &&
+                            permissions.contains(android.Manifest.permission.READ_EXTERNAL_STORAGE))) {
+                    Constants.showImageChooser(this)
+                }
+            } else {
+                Toast.makeText(
+                    this,
+                    "Oops! You just denied the permission for storage. You can allow it from Settings.",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
-
     }
 
 
